@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">GPS Nurse Call</string>
+    <string name="title_activity_maps">MapView</string>
+</resources>
