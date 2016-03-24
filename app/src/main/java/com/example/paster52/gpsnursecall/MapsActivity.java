@@ -32,7 +32,6 @@ public class MapsActivity extends FragmentActivity implements
         public static final String TAG = MapsActivity.class.getSimpleName();
         private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
         private LocationRequest mLocationRequest;
-        private int hello;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
