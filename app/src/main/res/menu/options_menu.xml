@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:title="Add Chair"
+            android:id="@+id/option_Add_Chair"
+            app:showAsAction="never"/>
+
+    <item android:title="Remove Chair"
+        android:id="@+id/option_Remove_Chair"
+        app:showAsAction="never"/>
+
+</menu>
