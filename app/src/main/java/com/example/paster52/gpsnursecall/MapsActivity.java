@@ -134,8 +134,11 @@ public class MapsActivity extends AppCompatActivity implements
         public boolean onOptionsItemSelected(MenuItem item) {
             // Handle item selection
             switch (item.getItemId()) {
-                case R.id.option_1:
-                    Toast.makeText(this, "I presseded da bttun", Toast.LENGTH_SHORT);
+                case R.id.option_Add_Chair:
+                    Toast.makeText(this, "I pressed the add button", Toast.LENGTH_SHORT);
+                    break;
+                case R.id.option_Remove_Chair:
+                    Toast.makeText(this, "I pressed the remove button", Toast.LENGTH_SHORT);
                     break;
             }
             return super.onOptionsItemSelected(item);
