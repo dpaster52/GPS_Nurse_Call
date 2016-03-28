@@ -1,10 +1,12 @@
 package com.example.paster52.gpsnursecall;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.database.Cursor;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,6 +28,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -35,6 +38,7 @@ public class MapsActivity extends AppCompatActivity implements
 
         private GoogleMap mMap; // Might be null if Google Play services APK is not available.
         private GoogleApiClient client;
+        private LocationManager manager;
         public static final String TAG = MapsActivity.class.getSimpleName();
         private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
         private LocationRequest mLocationRequest;
@@ -56,6 +60,7 @@ public class MapsActivity extends AppCompatActivity implements
                     .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                     .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                     .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+            manager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
 
             /*ContentResolver contentResolver = getContentResolver();
             Cursor cursor = contentResolver.query( Uri.parse("content://sms/inbox"), null, null, null, null);
@@ -139,6 +144,13 @@ public class MapsActivity extends AppCompatActivity implements
                     break;
                 case R.id.option_Remove_Chair:
                     Toast.makeText(this, "I pressed the remove button", Toast.LENGTH_SHORT);
+                    break;
+                case R.id.option_Go_to:
+                    Log.d("Tag", "Go to the given location");
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(33.789234, -84.405327)).title("IKEA"));
+                    Toast.makeText(this, "I pressed the remove button", Toast.LENGTH_SHORT);
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=33.789234, -84.405327"));
+                    startActivity(i);
                     break;
             }
             return super.onOptionsItemSelected(item);

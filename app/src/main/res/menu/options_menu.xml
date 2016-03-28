@@ -9,5 +9,8 @@
     <item android:title="Remove Chair"
         android:id="@+id/option_Remove_Chair"
         app:showAsAction="never"/>
+    <item android:title="Go To"
+        android:id="@+id/option_Go_to"
+        app:showAsAction="never"/>
 
 </menu>
