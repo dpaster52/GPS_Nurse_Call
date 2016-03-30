@@ -62,13 +62,23 @@ public class MapsActivity extends AppCompatActivity implements
                     .setFastestInterval(1 * 1000); // 1 second, in milliseconds
             manager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
 
-            /*ContentResolver contentResolver = getContentResolver();
-            Cursor cursor = contentResolver.query( Uri.parse("content://sms/inbox"), null, null, null, null);
-            int indexBody = cursor.getColumnIndex( SmsReceiver.BODY );
-            int indexAddr = cursor.getColumnIndex( SmsReceiver.ADDRESS );
+            // public static final String INBOX = "content://sms/inbox";
+            // public static final String SENT = "content://sms/sent";
+            // public static final String DRAFT = "content://sms/draft";
+            Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
 
-
-            if ( indexBody < 0 || !cursor.moveToFirst() ) return;*/
+            if (cursor.moveToFirst()) { // must check the result to prevent exception
+                do {
+                    String msgData = "";
+                    for(int idx=0;idx<cursor.getColumnCount();idx++)
+                    {
+                        msgData += " " + cursor.getColumnName(idx) + ":" + cursor.getString(idx);
+                    }
+                    // use msgData
+                } while (cursor.moveToNext());
+            } else {
+                // empty box, no SMS
+            }
 
         }
 
@@ -144,12 +154,13 @@ public class MapsActivity extends AppCompatActivity implements
                     break;
                 case R.id.option_Remove_Chair:
                     Toast.makeText(this, "I pressed the remove button", Toast.LENGTH_SHORT);
+
                     break;
                 case R.id.option_Go_to:
                     Log.d("Tag", "Go to the given location");
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(33.789234, -84.405327)).title("IKEA"));
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(33.789234,-84.405327)).title("CRC"));
                     Toast.makeText(this, "I pressed the remove button", Toast.LENGTH_SHORT);
-                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=33.789234, -84.405327"));
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=33.789234,-84.405327&mode=w"));
                     startActivity(i);
                     break;
             }
