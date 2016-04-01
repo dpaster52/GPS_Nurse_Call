@@ -39,10 +39,11 @@ public class ServiceCommunicator extends Service {
         public void onCreate()
         {
             super.onCreate();
-            mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+            //Todo see if I can get this to work in the SMS class
+            /*mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
             // Display a notification about us starting.  We put an icon in the status bar.
-            showNotification();
+            showNotification();*/
 
             //SMS event receiver
             mSMSreceiver = new SMSreceiver();
@@ -71,6 +72,7 @@ public class ServiceCommunicator extends Service {
         return mBinder;
     }
 
+//Todo move this to SMS code
     private void showNotification() {
         // In this sample, we'll use the same text for the ticker and the expanded notification
         CharSequence text = getText(R.string.local_service_started);

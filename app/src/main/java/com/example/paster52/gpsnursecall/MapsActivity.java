@@ -55,7 +55,7 @@ public class MapsActivity extends AppCompatActivity implements
         private ServiceCommunicator mServiceCommunicator;
         private boolean mIsBound=false;
 
-
+//Todo comment on the code and add references
     private ServiceConnection mConnection = new ServiceConnection() {
         //Code found at http://developer.android.com/reference/android/app/Service.html
         @Override
