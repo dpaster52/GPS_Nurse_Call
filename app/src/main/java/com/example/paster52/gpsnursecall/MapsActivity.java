@@ -1,13 +1,17 @@
 package com.example.paster52.gpsnursecall;
 
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.IBinder;
+import android.renderscript.ScriptGroup;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -21,6 +25,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -33,6 +39,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import com.example.paster52.gpsnursecall.ServiceCommunicator;
+import com.example.paster52.gpsnursecall.SMSreceiver;
+
+
 public class MapsActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener {
 
@@ -42,6 +52,35 @@ public class MapsActivity extends AppCompatActivity implements
         public static final String TAG = MapsActivity.class.getSimpleName();
         private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
         private LocationRequest mLocationRequest;
+        private ServiceCommunicator mServiceCommunicator;
+        private boolean mIsBound=false;
+
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        //Code found at http://developer.android.com/reference/android/app/Service.html
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the service object we can use to
+            // interact with the service.  Because we have bound to a explicit
+            // service that we know is running in our own process, we can
+            // cast its IBinder to a concrete class and directly access it.
+            mServiceCommunicator = ((ServiceCommunicator.LocalBinder)service).getService();
+            mIsBound=true;
+            // Tell the user about this for our demo.
+            //Toast.makeText(ScriptGroup.Binding.this,"trial",Toast.LENGTH_SHORT).show();
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            // Because it is running in our same process, we should never
+            // see this happen.
+            mServiceCommunicator = null;
+            mIsBound=false;
+            //Toast.makeText(ScriptGroup.Binding.this,"Check Status",Toast.LENGTH_SHORT).show();
+        }
+    };
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -50,35 +89,37 @@ public class MapsActivity extends AppCompatActivity implements
             setUpMapIfNeeded();
             Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
             setSupportActionBar(myToolbar);
-
+            //comm.onCreate();
+            // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
+            // See https://g.co/AppIndexing/AndroidStudio for more information.
             client = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
-                    .build();
+                    .addApi(AppIndex.API).build();
             mLocationRequest = LocationRequest.create()
                     .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                     .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                     .setFastestInterval(1 * 1000); // 1 second, in milliseconds
-            manager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
+            manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
 
             // public static final String INBOX = "content://sms/inbox";
             // public static final String SENT = "content://sms/sent";
             // public static final String DRAFT = "content://sms/draft";
-            Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
+            /*Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
 
             if (cursor.moveToFirst()) { // must check the result to prevent exception
                 do {
                     String msgData = "";
-                    for(int idx=0;idx<cursor.getColumnCount();idx++)
-                    {
+                    for (int idx = 0; idx < cursor.getColumnCount(); idx++) {
                         msgData += " " + cursor.getColumnName(idx) + ":" + cursor.getString(idx);
                     }
                     // use msgData
                 } while (cursor.moveToNext());
             } else {
                 // empty box, no SMS
-            }
+            }*/
 
         }
 
@@ -87,11 +128,14 @@ public class MapsActivity extends AppCompatActivity implements
             super.onResume();
             setUpMapIfNeeded();
             client.connect();
+            //this.getApplicationContext().stopService(getIntent());
         }
 
         @Override
         protected void onPause() {
             super.onPause();
+            //this.getApplicationContext().startService(getIntent());
+            //comm.startService(getIntent());
             if (client.isConnected()) {
                 LocationServices.FusedLocationApi.removeLocationUpdates(client, this);
             }
@@ -105,7 +149,7 @@ public class MapsActivity extends AppCompatActivity implements
          * call {@link #setUpMap()} once when {@link #mMap} is not null.
          * <p/>
          * If it isn't installed {@link SupportMapFragment} (and
-         * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
+         * {@link MapView MapView}) will show a prompt for the user to
          * install/update the Google Play services APK on their device.
          * <p/>
          * A user can return to this FragmentActivity after following the prompt and correctly
@@ -150,17 +194,17 @@ public class MapsActivity extends AppCompatActivity implements
             // Handle item selection
             switch (item.getItemId()) {
                 case R.id.option_Add_Chair:
-                    Toast.makeText(this, "I pressed the add button", Toast.LENGTH_SHORT);
+                    Toast.makeText(this, "Drop marker to place chair", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.option_Remove_Chair:
-                    Toast.makeText(this, "I pressed the remove button", Toast.LENGTH_SHORT);
+                    Toast.makeText(this, "Click on chair to be removed", Toast.LENGTH_SHORT).show();
 
                     break;
                 case R.id.option_Go_to:
                     Log.d("Tag", "Go to the given location");
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(33.789234,-84.405327)).title("CRC"));
-                    Toast.makeText(this, "I pressed the remove button", Toast.LENGTH_SHORT);
-                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=33.789234,-84.405327&mode=w"));
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(33.775449, -84.403181)).title("CRC"));
+                    Toast.makeText(this, "I want to go to CRC", Toast.LENGTH_SHORT).show();
+                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=33.775449, -84.403181&mode=w"));
                     startActivity(i);
                     break;
             }
@@ -218,4 +262,60 @@ public class MapsActivity extends AppCompatActivity implements
         public void onLocationChanged(Location location) {
             handleNewLocation(location);
         }
+
+   private void doUnbindService() {
+        if (mIsBound) {
+            // Detach our existing connection.
+            unbindService(mConnection);
+            mIsBound = false;
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, ServiceCommunicator.class);
+        startService(intent);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Maps Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.paster52.gpsnursecall/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mIsBound) {
+            unbindService(mConnection);
+            mIsBound = false;
+        }
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Maps Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.paster52.gpsnursecall/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
+    }
 }

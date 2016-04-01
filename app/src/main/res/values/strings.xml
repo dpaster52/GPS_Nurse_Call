@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">GPS Nurse Call</string>
     <string name="title_activity_maps">GPS Nurse Call</string>
+    <string name="local_service_started">The Message was received</string>
+    <string name="local_service_label">Label</string>
 </resources>
