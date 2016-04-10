@@ -54,6 +54,7 @@ public class MapsActivity extends AppCompatActivity implements
         private LocationRequest mLocationRequest;
         private ServiceCommunicator mServiceCommunicator;
         private boolean mIsBound=false;
+        //public static String message;
 
 //Todo comment on the code and add references
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -318,4 +319,5 @@ public class MapsActivity extends AppCompatActivity implements
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
+
 }
