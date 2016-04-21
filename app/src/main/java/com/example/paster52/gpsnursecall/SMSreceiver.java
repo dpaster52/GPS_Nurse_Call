@@ -17,68 +17,48 @@ import java.util.List;
 
 /**
  * Created by Paster52 on 3/29/2016.
+ * Class receives all incoming SMS messages
  */
+
 public class SMSreceiver extends BroadcastReceiver {
     private final String TAG = this.getClass().getSimpleName();
     private NotificationManager mNM;
     private int NOTIFICATION = R.string.local_service_started;
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(Context context, Intent intent)
+    {
 
 
             Bundle extras = intent.getExtras();
             String strMessage = "";
-            if (extras != null) {
+            if (extras != null)
+            {
                 Object[] smsextras = (Object[]) extras.get("pdus");
 
                 for (int i = 0; i < smsextras.length; i++) {
                     SmsMessage smsmsg = SmsMessage.createFromPdu((byte[]) smsextras[i]);
                     String strMsgBody = smsmsg.getMessageBody().toString();
                     String strMsgSrc = smsmsg.getOriginatingAddress();
-                    if(strMsgSrc.contains("+12296305667")){
-
+                    //Only read messages from Device
+                    if((strMsgSrc.contains("+12296305667")) || (strMsgSrc.contains("+17068314114"))||(strMsgSrc.contains("+14049488322"))){
+                        //Log message source and destination used for debugging
                         strMessage += "SMS from " + strMsgSrc + " : " + strMsgBody;
-                        /*for(String info:strMsgBody.split(",")) {
-                            if (info.contains("")) {
-                            }
-                        }*/
-                        //Log.i(TAG, strMessage);
-                        /*ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-                        List <ActivityManager.RunningTaskInfo> tasks =activityManager.getRunningTasks(Integer.MAX_VALUE);
-                        for(ActivityManager.RunningTaskInfo task : tasks)
+                        Log.d(TAG, strMessage);
+                        //showNotification(context, intent, strMsgBody);
+                        String[] message = strMsgBody.split(",");
+                        //Adds location to the list
+                        MapsActivity.patientList.push(message[1]+","+message[0]);
+                        if(MapsActivity.patientList.size()<2)
                         {
-                            if(task.baseActivity.getPackageName().contains("Google"))
-                            {
-
-                            }
-                        }*/
-                        ActivityManager am = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
-                        String packageName = am.getRunningTasks(1).get(0).topActivity.getPackageName();
-                        if(packageName.contains("Google"))
-                        {
-
-                        }
-                        else
-                        {
-                            Log.d(TAG, strMessage);
-                            //showNotification(context, intent, strMsgBody);
-                            String[] message = strMsgBody.split(",");
-                            MapsActivity.positionList.push(message[1]+","+message[0]);
-                            if(MapsActivity.positionList.size()<2)
-                            {
-                                Intent googleIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + message[1] + "," + message[0] + "&mode=w"));
-                                //googleIntent.setClassName("com.example.paster52.gpsnursecall","com.example.paster52.gpsnursecall.MapsActivity");
-                                googleIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                context.startActivity(googleIntent);
-                            }
+                            //Navigates to the location of patient
+                            Intent googleIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + message[1] + "," + message[0] + "&mode=w"));
+                            //googleIntent.setClassName("com.example.paster52.gpsnursecall","com.example.paster52.gpsnursecall.MapsActivity");
+                            googleIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            context.startActivity(googleIntent);
                         }
                     }
-
-
                 }
-
             }
-
     }
     //Todo try to fix if time permits
     private void showNotification(Context context, Intent intent,String lat_long) {

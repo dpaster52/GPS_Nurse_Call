@@ -51,7 +51,6 @@ import java.util.ListIterator;
 
 public class MapsActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener {
-
         private GoogleMap mMap; // Might be null if Google Play services APK is not available.
         private GoogleApiClient client;
         private LocationManager manager;
@@ -60,7 +59,7 @@ public class MapsActivity extends AppCompatActivity implements
         private LocationRequest mLocationRequest;
         private ServiceCommunicator mServiceCommunicator;
         private boolean mIsBound=false;
-        public static LinkedList<String > positionList;
+        public static LinkedList<String > patientList;
         //public static String message;
 
 //Todo comment on the code and add references
@@ -95,6 +94,7 @@ public class MapsActivity extends AppCompatActivity implements
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_maps);
             setUpMapIfNeeded();
+            //Create toolbar
             Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
             setSupportActionBar(myToolbar);
             //comm.onCreate();
@@ -110,25 +110,7 @@ public class MapsActivity extends AppCompatActivity implements
                     .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                     .setFastestInterval(1 * 1000); // 1 second, in milliseconds
             manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-            positionList = new LinkedList<>();
-
-            // public static final String INBOX = "content://sms/inbox";
-            // public static final String SENT = "content://sms/sent";
-            // public static final String DRAFT = "content://sms/draft";
-            /*Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
-
-            if (cursor.moveToFirst()) { // must check the result to prevent exception
-                do {
-                    String msgData = "";
-                    for (int idx = 0; idx < cursor.getColumnCount(); idx++) {
-                        msgData += " " + cursor.getColumnName(idx) + ":" + cursor.getString(idx);
-                    }
-                    // use msgData
-                } while (cursor.moveToNext());
-            } else {
-                // empty box, no SMS
-            }*/
-
+            patientList = new LinkedList<>();
         }
 
         @Override
@@ -137,9 +119,10 @@ public class MapsActivity extends AppCompatActivity implements
             setUpMapIfNeeded();
             client.connect();
             //this.getApplicationContext().stopService(getIntent());
-            if(MapsActivity.positionList.size()>1)
+            //Removes last navigated location
+            if(MapsActivity.patientList.size()>1)
             {
-                MapsActivity.positionList.removeLast();
+                MapsActivity.patientList.removeLast();
             }
         }
 
@@ -148,6 +131,7 @@ public class MapsActivity extends AppCompatActivity implements
             super.onPause();
             //this.getApplicationContext().startService(getIntent());
             //comm.startService(getIntent());
+            //Let google maps handle navigation
             if (client.isConnected()) {
                 LocationServices.FusedLocationApi.removeLocationUpdates(client, this);
             }
@@ -191,7 +175,7 @@ public class MapsActivity extends AppCompatActivity implements
          */
         private void setUpMap() {
 
-            mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+            //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
         }
 
         @Override
@@ -208,7 +192,7 @@ public class MapsActivity extends AppCompatActivity implements
                 case R.id.option_Show_Chair:
                     Toast.makeText(this, "Showing all patients", Toast.LENGTH_SHORT).show();
                     int x =1;
-                    for(String loc : MapsActivity.positionList)
+                    for(String loc : MapsActivity.patientList)
                     {
 
                         String [] latlng = loc.split(",");
@@ -224,10 +208,10 @@ public class MapsActivity extends AppCompatActivity implements
                     Log.d("Tag", "Go to the given location");
                     //mMap.addMarker(new MarkerOptions().position(new LatLng(33.775449, -84.403181)).title("CRC"));
 
-                    if(MapsActivity.positionList.size()>0)
+                    if(MapsActivity.patientList.size()>0)
                     {
                         Toast.makeText(this, "Navigating to Missed Patient", Toast.LENGTH_SHORT).show();
-                        String first = MapsActivity.positionList.removeLast();
+                        String first = MapsActivity.patientList.removeLast();
                         Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + first + "&mode=w"));
                         startActivity(i);
                     }
@@ -242,6 +226,7 @@ public class MapsActivity extends AppCompatActivity implements
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
+            //Todo Add check permission if release intended
             Location location = LocationServices.FusedLocationApi.getLastLocation(client);
             if (location == null) {
                 LocationServices.FusedLocationApi.requestLocationUpdates(client, mLocationRequest, this);
