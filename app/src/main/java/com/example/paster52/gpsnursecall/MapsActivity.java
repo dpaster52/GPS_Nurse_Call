@@ -42,6 +42,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.paster52.gpsnursecall.ServiceCommunicator;
 import com.example.paster52.gpsnursecall.SMSreceiver;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+
 
 public class MapsActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,LocationListener {
@@ -54,6 +60,7 @@ public class MapsActivity extends AppCompatActivity implements
         private LocationRequest mLocationRequest;
         private ServiceCommunicator mServiceCommunicator;
         private boolean mIsBound=false;
+        public static LinkedList<String > positionList;
         //public static String message;
 
 //Todo comment on the code and add references
@@ -103,7 +110,7 @@ public class MapsActivity extends AppCompatActivity implements
                     .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                     .setFastestInterval(1 * 1000); // 1 second, in milliseconds
             manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
+            positionList = new LinkedList<>();
 
             // public static final String INBOX = "content://sms/inbox";
             // public static final String SENT = "content://sms/sent";
@@ -130,6 +137,10 @@ public class MapsActivity extends AppCompatActivity implements
             setUpMapIfNeeded();
             client.connect();
             //this.getApplicationContext().stopService(getIntent());
+            if(MapsActivity.positionList.size()>1)
+            {
+                MapsActivity.positionList.removeLast();
+            }
         }
 
         @Override
@@ -194,19 +205,36 @@ public class MapsActivity extends AppCompatActivity implements
         public boolean onOptionsItemSelected(MenuItem item) {
             // Handle item selection
             switch (item.getItemId()) {
-                case R.id.option_Add_Chair:
-                    Toast.makeText(this, "Drop marker to place chair", Toast.LENGTH_SHORT).show();
+                case R.id.option_Show_Chair:
+                    Toast.makeText(this, "Showing all patients", Toast.LENGTH_SHORT).show();
+                    int x =1;
+                    for(String loc : MapsActivity.positionList)
+                    {
+
+                        String [] latlng = loc.split(",");
+                        mMap.addMarker(new MarkerOptions().position(new LatLng(Double.parseDouble(latlng[0]),Double.parseDouble(latlng[1]))).title("Patient"+x));
+                        x++;
+                    }
                     break;
-                case R.id.option_Remove_Chair:
+                /*case R.id.option_Remove_Chair:
                     Toast.makeText(this, "Click on chair to be removed", Toast.LENGTH_SHORT).show();
 
-                    break;
+                    break;*/
                 case R.id.option_Go_to:
                     Log.d("Tag", "Go to the given location");
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(33.775449, -84.403181)).title("CRC"));
-                    Toast.makeText(this, "I want to go to CRC", Toast.LENGTH_SHORT).show();
-                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=33.775449, -84.403181&mode=w"));
-                    startActivity(i);
+                    //mMap.addMarker(new MarkerOptions().position(new LatLng(33.775449, -84.403181)).title("CRC"));
+
+                    if(MapsActivity.positionList.size()>0)
+                    {
+                        Toast.makeText(this, "Navigating to Missed Patient", Toast.LENGTH_SHORT).show();
+                        String first = MapsActivity.positionList.removeLast();
+                        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + first + "&mode=w"));
+                        startActivity(i);
+                    }
+                    else
+                    {
+                        Toast.makeText(this, "No missed patients", Toast.LENGTH_SHORT).show();
+                    }
                     break;
             }
             return super.onOptionsItemSelected(item);

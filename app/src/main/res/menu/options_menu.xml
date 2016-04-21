@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:title="Add Chair"
-            android:id="@+id/option_Add_Chair"
+    <item android:title="Show Chairs"
+            android:id="@+id/option_Show_Chair"
             app:showAsAction="never"/>
 
-    <item android:title="Remove Chair"
+   <!-- <item android:title="Remove Chair"
         android:id="@+id/option_Remove_Chair"
-        app:showAsAction="never"/>
+        app:showAsAction="never"/>-->
     <item android:title="Go To"
         android:id="@+id/option_Go_to"
         app:showAsAction="never"/>
